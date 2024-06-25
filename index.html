@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Shortener</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 80%;
+            max-width: 500px;
+            text-align: center;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        input[type="text"], input[type="url"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            background: #5cb85c;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #4cae4c;
+        }
+        .result {
+            margin-top: 20px;
+            text-align: left; /* Align text to the left */
+        }
+        .result a {
+            color: #007bff; /* Blue color for links */
+            text-decoration: none; /* Remove underline */
+            font-weight: bold; /* Make text bold */
+        }
+        .result a:hover {
+            text-decoration: underline; /* Underline on hover */
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>URL Shortener</h1>
+        
+        <form id="shortenForm">
+            <h2>Shorten URL</h2>
+            <input type="url" id="longUrl" placeholder="Enter the long URL" required>
+            <button type="submit">Shorten</button>
+        </form>
+        
+        <form id="decodeForm">
+            <h2>Decode Short URL</h2>
+            <input type="text" id="shortUrl" placeholder="Enter the short URL" required>
+            <button type="submit">Decode</button>
+        </form>
+        
+        <div class="result" id="result"></div>
+        <div class="error" id="error"></div>
+    </div>
+
+    <script>
+        document.getElementById('shortenForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const longUrl = document.getElementById('longUrl').value;
+            const resultElement = document.getElementById('result');
+            const errorElement = document.getElementById('error');
+            resultElement.innerHTML = '';
+            errorElement.innerHTML = '';
+            try {
+                const response = await fetch('http://localhost:5000/short', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ url: longUrl })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    resultElement.innerHTML = `Short URL: <a href="${data.shortUrl}" target="_blank">${data.shortUrl}</a>`;
+                } else {
+                    errorElement.innerText = `Error: ${data.message}`;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                errorElement.innerText = 'Error shortening URL';
+            }
+        });
+
+        document.getElementById('decodeForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const shortUrl = document.getElementById('shortUrl').value;
+            const resultElement = document.getElementById('result');
+            const errorElement = document.getElementById('error');
+            resultElement.innerHTML = '';
+            errorElement.innerHTML = '';
+            try {
+                const response = await fetch(`http://localhost:5000/decode/${shortUrl}`, {
+                    method: 'GET',
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    resultElement.innerHTML = `Long URL: <a href="${data.longUrl}" target="_blank">${data.longUrl}</a>`;
+                } else {
+                    errorElement.innerText = `Error: ${data.message}`;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                errorElement.innerText = 'Error decoding URL';
+            }
+        });
+    </script>
+</body>
+</html>
