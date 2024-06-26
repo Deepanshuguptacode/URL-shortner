@@ -19,7 +19,8 @@ const urlShorten=(req,res)=>{
     })
     res.status(201).send({
         message:"url created successfully",
-        shortUrl: `http://localhost:5000/decode/${shortUrl}`
+        decodeUrl: `http://192.168.29.183:5000/decode/${shortUrl}`,
+        shortUrl: `http://192.168.29.183:5000/rd/${shortUrl}`
     })
     
 }
@@ -41,18 +42,49 @@ const decodeURL = async (req, res) => {
             });
         }
 
-        res.status(200).send({
+        res.status(200)
+        .send({
             message: "url decoded successfully",
             longUrl: longUrl.longUrl
-        });
+        })
     } catch (error) {
         console.error("Error finding URL:", error);
         res.status(500).send({
             message: "Internal server error",
             error: error.message
         });
+        
+    }
+};
+
+const redirectUrl = async (req, res) => {
+    const url = req.params.url;
+    console.log(url);
+    if (!url) {
+        return res.status(404).send({
+            message: "url is required"
+        });
+    }
+
+    try {
+        const longUrl = await urlModel.findOne({ shortUrl: url });
+        if (!longUrl) {
+            return res.status(404).send({
+                message: "URL not found"
+            });
+        }
+
+        res.status(301)
+        .redirect(longUrl.longUrl);
+    } catch (error) {
+        console.error("Error finding URL:", error);
+        res.status(500).send({
+            message: "Internal server error",
+            error: error.message
+        });
+        
     }
 };
 
 
-export { urlShorten , decodeURL};
+export { urlShorten , decodeURL,redirectUrl};

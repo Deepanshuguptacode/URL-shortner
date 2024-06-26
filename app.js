@@ -20,5 +20,5 @@ app.use(express.json());
 route(app);
 
 app.listen(5000, () => {
-    console.log('Server running at http://localhost:5000');
+    console.log('Server running at http://192.168.29.183:5000');
 });
